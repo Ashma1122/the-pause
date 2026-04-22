@@ -109,8 +109,8 @@ export async function POST(req: Request) {
       questions.length > 0
         ? questions.map((q) => `${q.text} → ${answers[q.id] ? "Yes" : "No"}`).join("\n")
         : Object.entries(answers)
-            .map(([k, v]) => `${k}: ${v ? "Yes" : "No"}`)
-            .join("\n");
+          .map(([k, v]) => `${k}: ${v ? "Yes" : "No"}`)
+          .join("\n");
 
     const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

@@ -340,16 +340,16 @@ export default function PauseTool() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [step]);
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = async (currentSituation: string) => {
     setStep(2);
     try {
       const res = await fetch("/api/questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ situation }),
+        body: JSON.stringify({ situation: currentSituation }),
       });
       const data = await res.json();
-      setQuestions(data.questions);
+      setQuestions(data.questions ?? []);
     } catch {
       setQuestions([
         { id: "reversible", text: "Is this action reversible?" },
@@ -364,7 +364,7 @@ export default function PauseTool() {
   const handleAnswer = (val: boolean) => {
     const newAnswers = { ...answers, [questions[currentQ].id]: val };
     setAnswers(newAnswers);
-    if (currentQ < questions.length - 1) setCurrentQ(currentQ + 1);
+    if (currentQ < (questions ?? []).length - 1) setCurrentQ(currentQ + 1);
     else setStep(4);
   };
 
@@ -427,7 +427,7 @@ export default function PauseTool() {
                 style={{ width: "100%", minHeight: 120, background: "#16120e", border: "1px solid #2e2416", borderRadius: "10px", color: "#ede0cc", fontFamily: "'Georgia', serif", fontSize: "15px", lineHeight: 1.6, padding: "16px", resize: "vertical", outline: "none", boxSizing: "border-box" }}
               />
             </div>
-            <button onClick={() => situation.trim() && fetchQuestions()} disabled={!situation.trim()} style={{ background: "transparent", border: `1px solid ${situation.trim() ? "#f5c97a" : "#2e2416"}`, borderRadius: "8px", color: situation.trim() ? "#f5c97a" : "#3a2e1a", fontFamily: "'DM Mono', monospace", fontSize: "13px", letterSpacing: "0.15em", padding: "14px 28px", cursor: situation.trim() ? "pointer" : "default" }}>
+            <button onClick={() => { const val = situation.trim(); if (val) fetchQuestions(val); }} disabled={!situation.trim()} style={{ background: "transparent", border: `1px solid ${situation.trim() ? "#f5c97a" : "#2e2416"}`, borderRadius: "8px", color: situation.trim() ? "#f5c97a" : "#3a2e1a", fontFamily: "'DM Mono', monospace", fontSize: "13px", letterSpacing: "0.15em", padding: "14px 28px", cursor: situation.trim() ? "pointer" : "default" }}>
               CONTINUE →
             </button>
           </div>
@@ -441,19 +441,19 @@ export default function PauseTool() {
         )}
 
         {/* Step 3: Adaptive Questions */}
-        {step === 3 && questions.length > 0 && (
+        {step === 3 && (questions ?? []).length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "24px", animation: "fadeUp 0.4s ease" }}>
             <div style={{ display: "flex", gap: "6px" }}>
-              {questions.map((_, i) => (
+              {(questions ?? []).map((_, i) => (
                 <div key={i} style={{ flex: 1, height: 2, borderRadius: 2, background: i <= currentQ ? "#f5c97a" : "#2e2416", transition: "background 0.3s" }} />
               ))}
             </div>
             <div>
               <div style={{ color: "#7a6040", fontFamily: "'DM Mono', monospace", fontSize: "11px", letterSpacing: "0.15em", marginBottom: "16px" }}>
-                {currentQ + 1} / {questions.length}
+                {currentQ + 1} / {(questions ?? []).length}
               </div>
               <p style={{ color: "#ede0cc", fontFamily: "'Cormorant Garamond', serif", fontSize: "26px", fontStyle: "italic", lineHeight: 1.3, margin: 0 }}>
-                {questions[currentQ].text}
+                {(questions ?? [])[currentQ]?.text}
               </p>
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
